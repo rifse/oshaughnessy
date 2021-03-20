@@ -1,4 +1,4 @@
-#!/home/admin/envs_py/oshaughnessey/bin/python3.8
+#!/home/user/environments/oshaughnessy/bin/python3.8
 
 # Get data as described in:
 # https://medium.datadriveninvestor.com/scraping-live-stock-fundamental-ratios-news-and-more-with-python-a716329e0493
