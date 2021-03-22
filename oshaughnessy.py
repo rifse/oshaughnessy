@@ -2,7 +2,6 @@
 
 import itertools
 import json
-from pprint import pprint
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup as soup
@@ -15,16 +14,16 @@ class Rate:
     def __init__(self, refresh=False):
 
         try:
-            with open('data_finviz.csv', 'r') as dataFile:
-                self.data = pd.read_csv(dataFile, index_col=0)
             if refresh:
                 with open('symbols.json', 'r') as dataFile:
                     data_symbols = json.load(dataFile)
-                    self.symbols = data_symbols['symbols']
-                for symbol in self.symbols:
+                    symbols = data_symbols['symbols']
+                for symbol in symbols:
                     # request new data w/ Data.get_symbol()
                     pass
-
+            else:
+                with open('data_finviz.csv', 'r') as dataFile:
+                    self.data = pd.read_csv(dataFile, index_col=0)
         except FileNotFoundError:
             # maybe have to __init__ Data and will take >48h:
             # call Data.make_symbols 

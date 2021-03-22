@@ -5,7 +5,6 @@
 
 import itertools
 import json
-from pprint import pprint
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup as soup
@@ -54,12 +53,11 @@ class Data:
         try:
             req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
             webpage = urlopen(req).read()
+            html = soup(webpage, "html.parser")  # # link for more details)
+            return html
         except (URLError, HTTPError) as e:  # (ConnectionError, HTTPError, Timeout):
             print(f'symbol {symbol} failed because {e.reason}')
             return None
-        else:
-            html = soup(webpage, "html.parser")  # # link for more details)
-            return html
         
     @staticmethod
     def get_fundamentals(html):
