@@ -15,20 +15,38 @@ from urllib.error import HTTPError, URLError
 
 class Data:
 
+    # class for scraping off finviz
+    # running make_symbols takes >48h, if interrupted NO data will persist
+
     def __init__(self, refresh=False):
         
-        pd.set_option('display.max_colwidth', 25)
-
-        self.symbols = []
         self.data = pd.DataFrame()
         try:
-            with open('symbols.json', 'r') as dataFile:
-                data = json.load(dataFile)
+            with open('data_finviz.csv', 'r') as dataFile:
+                self.data = pd.read_csv(dataFile, index_col=0)
         except FileNotFoundError:
-            # make_symbols() will also populate self.data
-            self.make_symbols(maxLen=4, save=True)
-        finally:
-            pass
+            self.make_symbols(maxLen=1, save=True)  # will also populate self.data
+
+    def make_symbols(self, maxLen=1, save=True):
+
+        alphanum = 'abcdefghijklmnopqrstuvwxyz'  # 0123456789'
+        symbols = []
+        for r in range(1, maxLen+1):
+            # for combo in itertools.combinations_with_replacement(alphanum, r):
+            for combo in itertools.product(alphanum, repeat=r):
+                c = ''.join(combo)
+                html = self.get_symbol(c)
+                if html:
+                    symbols.append(c)
+                    fundamentals = self.get_fundamentals(html)
+                    self.data[c] = fundamentals['Values']
+                    print(self.data[c].to_string())
+        # print(self.data.to_string())
+        self.data = self.data.T  # transpose
+        if save:
+            self.data.to_csv('data_finviz.csv')
+            with open('symbols.json', 'w+') as dataFile:
+                json.dump({"symbols": symbols}, dataFile)
 
     @staticmethod
     def get_symbol(symbol):
@@ -42,28 +60,6 @@ class Data:
         else:
             html = soup(webpage, "html.parser")  # # link for more details)
             return html
-
-    def make_symbols(self, maxLen=1, save=True):
-        alphanum = 'abcdefghijklmnopqrstuvwxyz'  # 0123456789'
-        symbols = []
-        for r in range(1, maxLen+1):
-            # for combo in itertools.combinations_with_replacement(alphanum, r):
-            for combo in itertools.product(alphanum, repeat=r):
-                c = ''.join(combo)
-                html = self.get_symbol(c)
-                if html:
-                    symbols.append(c)
-                    fundamentals = self.get_fundamentals(html)
-                    self.data[c] = fundamentals['Values']
-                    print(self.data[c])
-        # print(self.data.to_string())
-        self.data = self.data.T  # transpose
-        if save:
-            self.data.to_csv('data_yesIndex.csv')
-            self.data.to_csv('data_noIndex.csv', index=False)
-            with open('symbols.json', 'w+') as dataFile:
-                json.dump({"symbols": symbols}, dataFile)
-        self.sybols = symbols
         
     @staticmethod
     def get_fundamentals(html):
@@ -130,7 +126,9 @@ class Data:
 
 
 if __name__ == '__main__':
-    data = Data()
+    pass
+    # data = Data()
+
     # print('fundamentals:')
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
     #     print(data.data)
