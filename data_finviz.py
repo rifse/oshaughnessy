@@ -1,10 +1,10 @@
-#!/home/user/environments/oshaughnessy/bin/python3.8
+#!/home/admin/envs_py/oshaughnessy/bin/python3.8
 
 # Get data as described in:
 # https://medium.datadriveninvestor.com/scraping-live-stock-fundamental-ratios-news-and-more-with-python-a716329e0493
 
 import itertools
-import json
+from json import load, dump
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup as soup
@@ -24,28 +24,44 @@ class Data:
             with open('data_finviz.csv', 'r') as dataFile:
                 self.data = pd.read_csv(dataFile, index_col=0)
         except FileNotFoundError:
-            self.make_symbols(maxLen=1, save=True)  # will also populate self.data
+            try:
+                with open('symbols.json', 'r') as dataFile:
+                    symbols = load(dataFile)['symbols']
+                self.data = self.get_symbols(symbols=symbols, save=True)
+            except FileNotFoundError:
+                print("THIS WILL PROBABLY TAKE >48h; CANCEL THIS, DOWNLOAD symbols.json AND RERUN")
+                self.get_symbols(maxLen=1, fish=True, save=True)  # will also populate self.data
 
-    def make_symbols(self, maxLen=1, save=True):
+    def get_symbols(self, symbols=[], maxLen=None, fish=False, save=True):
 
-        alphanum = 'abcdefghijklmnopqrstuvwxyz'  # 0123456789'
-        symbols = []
-        for r in range(1, maxLen+1):
-            # for combo in itertools.combinations_with_replacement(alphanum, r):
-            for combo in itertools.product(alphanum, repeat=r):
-                c = ''.join(combo)
-                html = self.get_symbol(c)
+        if fish:
+            alphanum = 'abcdefghijklmnopqrstuvwxyz'  # 0123456789'
+            symbols = []
+            for r in range(1, maxLen+1):
+                # for com in itertools.combinations_with_replacement(alphanum, r):
+                for combination in itertools.product(alphanum, repeat=r):
+                    combo = ''.join(combination)
+                    html = self.get_symbol(combo)
+                    if html:
+                        symbols.append(combo)
+                        fundamentals = self.get_fundamentals(html)
+                        self.data[combo] = fundamentals['Values']
+                        print(f'found one named {combo}')
+                with open('symbols.json', 'w+') as dataFile:
+                    dump({"symbols": symbols}, dataFile)
+        else:
+            for sym in symbols:
+                html = self.get_symbol(sym)
                 if html:
-                    symbols.append(c)
                     fundamentals = self.get_fundamentals(html)
-                    self.data[c] = fundamentals['Values']
-                    print(self.data[c].to_string())
+                    self.data[sym] = fundamentals['Values']
+                    print(f'{sym} SUCCESS')
+                else:
+                    print(f'get {sym} failed')
         # print(self.data.to_string())
         self.data = self.data.T  # transpose
         if save:
             self.data.to_csv('data_finviz.csv')
-            with open('symbols.json', 'w+') as dataFile:
-                json.dump({"symbols": symbols}, dataFile)
 
     @staticmethod
     def get_symbol(symbol):
@@ -86,6 +102,7 @@ class Data:
             return fundamentals
 
         except Exception as e:
+            print(f'str(e): {str(e)}\ne: {e}')
             return None
 
     @staticmethod
@@ -124,8 +141,7 @@ class Data:
 
 
 if __name__ == '__main__':
-    pass
-    # data = Data()
+    data = Data()
 
     # print('fundamentals:')
     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
