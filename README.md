@@ -17,11 +17,10 @@ cd; wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckod
 ```
 Finally unpack geckodriver, make it executable and install firefox:
 ```shell
-tar -xvzf geckodriver*
-chmod +x geckodriver
+tar -xvzf geckodriver*; chmod +x geckodriver; rm geckodriver-v*
 sudo apt install firefox
 ```
-Run `python3 data_yahoo.py`.
+Run `python3 data_yahoo.py` (not complete yet).
 
 ## Calculate VCs (not complete yet)
 ```shell

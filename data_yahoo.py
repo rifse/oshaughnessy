@@ -35,6 +35,8 @@ class Data:
         click = True
         options = Options()
         options.headless = True
+        data = pd.DataFrame()
+
         for sym in symbols:  
             if click:
                 driver = webdriver.Firefox(executable_path='../geckodriver', options=options)
@@ -42,8 +44,13 @@ class Data:
                 try:
                     driver.get(f'https://finance.yahoo.com/quote/{sym}/key-statistics')
                     driver.find_element_by_css_selector('[name=agree]').click()  # oauth
-                    data = pd.concat(pd.read_html(driver.page_source))
-                    data.set_index(data.columns[0], inplace=True)
+                    if data.empty:
+                        data = pd.concat(pd.read_html(driver.page_source))
+                        data.set_index(data.columns[0], inplace=True)
+                    else:
+                        frames = pd.concat(pd.read_html(driver.page_source))
+                        frames.set_index(frames.columns[0], inplace=True)
+                        data = pd.concat([data, frames], axis=1)
                     click = False
                     print(f'success for symbol {sym}')
                 except Exception as e:
@@ -60,6 +67,9 @@ class Data:
                     driver.close()   
                     click = True
                     print(f'exception {str(e)} for symbol {sym}')
+                finally:
+                    print(f'garbageLen: {len(garbage)}')
+                    print(f'dataShape: {data.shape}')
         driver.close()   
         for sym in garbage:
             symbols.remove(sym)
