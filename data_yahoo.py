@@ -1,4 +1,4 @@
-#!/home/admin/envs_py/oshaughnessy/bin/python3.8
+#!/home/user/environments/oshaughnessy/bin/python3.8
 
 from json import load
 from selenium import webdriver
@@ -20,7 +20,6 @@ class Data:
             with open('data_yahoo.csv', 'r') as dataFile:
                 self.data = pd.read_csv(dataFile, index_col=0)
         except FileNotFoundError:
-            # self.data = pd.DataFrame()
             try:
                 with open('symbols.json', 'r') as dataFile:
                     symbols = load(dataFile)['symbols']
@@ -67,9 +66,6 @@ class Data:
                     driver.close()   
                     click = True
                     print(f'exception {str(e)} for symbol {sym}')
-                finally:
-                    print(f'garbageLen: {len(garbage)}')
-                    print(f'dataShape: {data.shape}')
         driver.close()   
         for sym in garbage:
             symbols.remove(sym)

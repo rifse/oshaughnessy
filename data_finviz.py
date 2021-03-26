@@ -1,4 +1,4 @@
-#!/home/admin/envs_py/oshaughnessy/bin/python3.8
+#!/home/user/environments/oshaughnessy/bin/python3.8
 
 # Get data as described in:
 # https://medium.datadriveninvestor.com/scraping-live-stock-fundamental-ratios-news-and-more-with-python-a716329e0493
@@ -15,9 +15,9 @@ from urllib.error import HTTPError, URLError
 class Data:
 
     # class for scraping off finviz
-    # running make_symbols takes >48h, if interrupted NO data will persist
+    # running get_symbols takes >48h, if interrupted NO data will persist
 
-    def __init__(self, refresh=False):
+    def __init__(self):
         
         self.data = pd.DataFrame()
         try:
@@ -38,7 +38,6 @@ class Data:
             alphanum = 'abcdefghijklmnopqrstuvwxyz'  # 0123456789'
             symbols = []
             for r in range(1, maxLen+1):
-                # for com in itertools.combinations_with_replacement(alphanum, r):
                 for combination in itertools.product(alphanum, repeat=r):
                     combo = ''.join(combination)
                     html = self.get_symbol(combo)
@@ -58,7 +57,6 @@ class Data:
                     print(f'{sym} SUCCESS')
                 else:
                     print(f'get {sym} failed')
-        # print(self.data.to_string())
         self.data = self.data.T  # transpose
         if save:
             self.data.to_csv('data_finviz.csv')
